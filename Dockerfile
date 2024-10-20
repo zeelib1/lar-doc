@@ -29,6 +29,9 @@ COPY . /var/www
 # Install application dependencies
 RUN composer install
 
+# Copy custom php-fpm configuration
+COPY php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
+
 # Expose port 9000 and start php-fpm server
 EXPOSE 9000
-CMD ["/bin/sh", "-c", "php-fpm"]
+CMD ["php-fpm", "-F"]
