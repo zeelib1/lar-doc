@@ -32,6 +32,8 @@ RUN composer install
 # Copy custom php-fpm configuration
 COPY php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
 
-# Expose port 9000 and start php-fpm server
-EXPOSE 9000
-CMD ["php-fpm", "-F"]
+# Expose port 9001 instead of 9000
+EXPOSE 9001
+
+# Modify the CMD to use port 9001
+CMD ["php-fpm", "-F", "--nodaemonize", "--fpm-config", "/usr/local/etc/php-fpm.d/www.conf"]
