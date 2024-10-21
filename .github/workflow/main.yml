@@ -122,7 +122,9 @@ jobs:
       - name: Update Nginx configuration
         run: |
           ssh ${{ secrets.USERNAME }}@${{ secrets.HOST }} "
-            sed -i 's/laravel_app:[0-9]*/laravel_app_${CI_COMMIT_SHORT_SHA}/g' /var/www/html/laravel-app/nginx.conf
+            cd /var/www/html/laravel-app
+            sed -i 's/laravel-app:9000/laravel_app_'${{ env.CI_COMMIT_SHORT_SHA }}':9000/g' nginx.conf
+            sed -i 's/laravel_backend:9000/laravel_app_'${{ env.CI_COMMIT_SHORT_SHA }}':9000/g' nginx.conf
           "
 
       - name: Build frontend assets
@@ -142,10 +144,17 @@ jobs:
             php artisan view:clear
           "
 
+      - name: Remove all existing containers
+        run: |
+          ssh ${{ secrets.USERNAME }}@${{ secrets.HOST }} "
+            docker rm -f $(docker ps -aq) || true
+          "
+
       - name: Deploy and start containers
         run: |
           ssh ${{ secrets.USERNAME }}@${{ secrets.HOST }} "
             cd /var/www/html/laravel-app
             export CI_COMMIT_SHORT_SHA=${{ env.CI_COMMIT_SHORT_SHA }}
+            echo 'CI_COMMIT_SHORT_SHA='$CI_COMMIT_SHORT_SHA
             docker-compose up -d --build --force-recreate
           "
