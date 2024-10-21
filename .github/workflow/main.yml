@@ -74,13 +74,12 @@ jobs:
             chmod -R 755 storage bootstrap/cache
           EOF
 
-      - name: Restart Docker containers
+      - name: Stop and remove existing containers
         run: |
-          ssh -T ${{ secrets.USERNAME }}@${{ secrets.HOST }} << 'EOF'
+          ssh ${{ secrets.USERNAME }}@${{ secrets.HOST }} "
             cd /var/www/html/laravel-app
-            docker-compose down
-            docker-compose up -d --build
-          EOF
+            docker-compose down -v --remove-orphans
+          "
 
       - name: Create .env file
         run: |
@@ -109,4 +108,10 @@ jobs:
           ssh ${{ secrets.USERNAME }}@${{ secrets.HOST }} "
             cd /var/www/html/laravel-app
             php artisan config:cache
+          "
+
+      - name: Prune Docker system
+        run: |
+          ssh ${{ secrets.USERNAME }}@${{ secrets.HOST }} "
+            docker system prune -af --volumes
           "
