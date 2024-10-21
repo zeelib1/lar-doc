@@ -80,8 +80,9 @@ jobs:
       - name: Stop and remove all containers
         run: |
           ssh ${{ secrets.USERNAME }}@${{ secrets.HOST }} "
-            docker stop $(docker ps -aq) || true
-            docker rm $(docker ps -aq) || true
+            docker-compose -f /var/www/html/laravel-app/docker-compose.yml down --volumes --remove-orphans
+            docker rm -f $(docker ps -aq) || true
+            docker volume prune -f
           "
 
       - name: Create .env file
