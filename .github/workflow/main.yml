@@ -47,6 +47,12 @@ jobs:
           echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env
           echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
 
+      - name: Check and free port 80
+        run: |
+          ssh ${{ secrets.USERNAME }}@${{ secrets.HOST }} "
+            sudo lsof -ti:80 | xargs --no-run-if-empty sudo kill -9
+          "
+
       - name: Deploy to VPS
         run: |
           rsync -avz --exclude=node_modules --exclude=.git --exclude=.github ./ ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/var/www/html/laravel-app/
