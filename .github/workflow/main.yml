@@ -77,11 +77,11 @@ jobs:
             chmod -R 755 storage bootstrap/cache
           EOF
 
-      - name: Stop and remove existing containers
+      - name: Stop and remove all containers
         run: |
           ssh ${{ secrets.USERNAME }}@${{ secrets.HOST }} "
-            cd /var/www/html/laravel-app
-            docker-compose down -v --remove-orphans
+            docker stop $(docker ps -aq) || true
+            docker rm $(docker ps -aq) || true
           "
 
       - name: Create .env file
@@ -96,11 +96,15 @@ jobs:
             APP_URL=${{ secrets.APP_URL }}
             
             DB_CONNECTION=${{ secrets.DB_CONNECTION }}
-            DB_HOST=${{ secrets.DB_HOST }}
-            DB_PORT=${{ secrets.DB_PORT }}
+            DB_HOST=postgres
+            DB_PORT=5432
             DB_DATABASE=${{ secrets.DB_DATABASE }}
             DB_USERNAME=${{ secrets.DB_USERNAME }}
             DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            
+            REDIS_HOST=redis
+            REDIS_PASSWORD=null
+            REDIS_PORT=6379
             
             # Add any other necessary environment variables here
             EOF
@@ -117,14 +121,6 @@ jobs:
         run: |
           ssh ${{ secrets.USERNAME }}@${{ secrets.HOST }} "
             docker system prune -af --volumes
-          "
-
-      - name: Update Nginx configuration
-        run: |
-          ssh ${{ secrets.USERNAME }}@${{ secrets.HOST }} "
-            cd /var/www/html/laravel-app
-            sed -i 's/laravel-app:9000/laravel_app_'${{ env.CI_COMMIT_SHORT_SHA }}':9000/g' nginx.conf
-            sed -i 's/laravel_backend:9000/laravel_app_'${{ env.CI_COMMIT_SHORT_SHA }}':9000/g' nginx.conf
           "
 
       - name: Build frontend assets
@@ -144,17 +140,9 @@ jobs:
             php artisan view:clear
           "
 
-      - name: Remove all existing containers
-        run: |
-          ssh ${{ secrets.USERNAME }}@${{ secrets.HOST }} "
-            docker rm -f $(docker ps -aq) || true
-          "
-
       - name: Deploy and start containers
         run: |
           ssh ${{ secrets.USERNAME }}@${{ secrets.HOST }} "
             cd /var/www/html/laravel-app
-            export CI_COMMIT_SHORT_SHA=${{ env.CI_COMMIT_SHORT_SHA }}
-            echo 'CI_COMMIT_SHORT_SHA='$CI_COMMIT_SHORT_SHA
             docker-compose up -d --build --force-recreate
           "
