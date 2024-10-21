@@ -115,3 +115,9 @@ jobs:
           ssh ${{ secrets.USERNAME }}@${{ secrets.HOST }} "
             docker system prune -af --volumes
           "
+
+      - name: Update Nginx configuration
+        run: |
+          ssh ${{ secrets.USERNAME }}@${{ secrets.HOST }} "
+            sed -i 's/laravel_app:[0-9]*/laravel_app_${CI_COMMIT_SHORT_SHA}/g' /var/www/html/laravel-app/nginx.conf
+          "
