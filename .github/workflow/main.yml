@@ -90,30 +90,19 @@ jobs:
             docker network rm laravel-app_app-network || true
           "
 
-      - name: Create .env file
+      - name: Copy server .env file
+        run: |
+          ssh ${{ secrets.USERNAME }}@${{ secrets.HOST }} "
+            cp /path/to/secure/.env /var/www/html/laravel-app/.env
+          "
+
+      - name: Update .env file
         run: |
           ssh ${{ secrets.USERNAME }}@${{ secrets.HOST }} "
             cd /var/www/html/laravel-app
-            cat << EOF > .env
-            APP_NAME=${{ secrets.APP_NAME }}
-            APP_ENV=${{ secrets.APP_ENV }}
-            APP_KEY=${{ secrets.APP_KEY }}
-            APP_DEBUG=${{ secrets.APP_DEBUG }}
-            APP_URL=${{ secrets.APP_URL }}
-            
-            DB_CONNECTION=${{ secrets.DB_CONNECTION }}
-            DB_HOST=postgres
-            DB_PORT=5432
-            DB_DATABASE=${{ secrets.DB_DATABASE }}
-            DB_USERNAME=${{ secrets.DB_USERNAME }}
-            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-            
-            REDIS_HOST=redis
-            REDIS_PASSWORD=null
-            REDIS_PORT=6379
-            
-            # Add any other necessary environment variables here
-            EOF
+            sed -i 's/DB_HOST=.*/DB_HOST=postgres/' .env
+            sed -i 's/REDIS_HOST=.*/REDIS_HOST=redis/' .env
+            # Add any other necessary .env updates here
           "
 
       - name: Cache Laravel configuration
@@ -159,4 +148,12 @@ jobs:
             cd /var/www/html/laravel-app
             docker network create laravel-app_app-network || true
             docker-compose up -d --build --force-recreate
+          "
+
+      - name: Update GitHub-specific variables
+        run: |
+          ssh ${{ secrets.USERNAME }}@${{ secrets.HOST }} "
+            cd /var/www/html/laravel-app
+            echo 'GITHUB_SHA=${{ github.sha }}' >> .env
+            echo 'GITHUB_REF=${{ github.ref }}' >> .env
           "
