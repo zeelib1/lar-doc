@@ -129,3 +129,20 @@ jobs:
             npm ci
             npm run build
           "
+
+      - name: Clear Laravel cache
+        run: |
+          ssh ${{ secrets.USERNAME }}@${{ secrets.HOST }} "
+            cd /var/www/html/laravel-app
+            php artisan cache:clear
+            php artisan config:clear
+            php artisan view:clear
+          "
+
+      - name: Set correct permissions
+        run: |
+          ssh ${{ secrets.USERNAME }}@${{ secrets.HOST }} "
+            cd /var/www/html/laravel-app
+            chmod -R 755 public/build
+            chown -R www-data:www-data public/build
+          "
