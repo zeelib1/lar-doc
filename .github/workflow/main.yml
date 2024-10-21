@@ -17,9 +17,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Set CI_COMMIT_SHORT_SHA
-        run: echo "CI_COMMIT_SHORT_SHA=$(echo $GITHUB_SHA | cut -c1-8)" >> $GITHUB_ENV
-
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
