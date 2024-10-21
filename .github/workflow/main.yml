@@ -124,7 +124,14 @@ jobs:
             docker system prune -af --volumes
           "
 
-      - name: Build frontend assets
+      - name: Install Node.js and npm
+        run: |
+          ssh ${{ secrets.USERNAME }}@${{ secrets.HOST }} "
+            curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
+            sudo apt-get install -y nodejs
+          "
+
+      - name: Install NPM dependencies and build assets
         run: |
           ssh ${{ secrets.USERNAME }}@${{ secrets.HOST }} "
             cd /var/www/html/laravel-app
