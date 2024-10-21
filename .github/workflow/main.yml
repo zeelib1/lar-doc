@@ -17,6 +17,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      - name: Set CI_COMMIT_SHORT_SHA
+        run: echo "CI_COMMIT_SHORT_SHA=$(echo $GITHUB_SHA | cut -c1-8)" >> $GITHUB_ENV
+
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -139,10 +142,10 @@ jobs:
             php artisan view:clear
           "
 
-      - name: Set correct permissions
+      - name: Deploy and start containers
         run: |
           ssh ${{ secrets.USERNAME }}@${{ secrets.HOST }} "
             cd /var/www/html/laravel-app
-            chmod -R 755 public/build
-            chown -R www-data:www-data public/build
+            export CI_COMMIT_SHORT_SHA=${{ env.CI_COMMIT_SHORT_SHA }}
+            docker-compose up -d --build --force-recreate
           "

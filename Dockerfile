@@ -37,3 +37,6 @@ EXPOSE 9001
 
 # Start PHP-FPM
 CMD ["php-fpm", "-F", "--nodaemonize"]
+
+# Copy mime.types file
+COPY mime.types /etc/nginx/mime.types
