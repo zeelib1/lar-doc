@@ -103,3 +103,10 @@ jobs:
             # Add any other necessary environment variables here
             EOF
           "
+
+      - name: Cache Laravel configuration
+        run: |
+          ssh ${{ secrets.USERNAME }}@${{ secrets.HOST }} "
+            cd /var/www/html/laravel-app
+            php artisan config:cache
+          "
