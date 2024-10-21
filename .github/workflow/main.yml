@@ -77,3 +77,25 @@ jobs:
             docker-compose down
             docker-compose up -d --build
           EOF
+
+      - name: Create .env file
+        run: |
+          ssh ${{ secrets.USERNAME }}@${{ secrets.HOST }} "
+            cd /var/www/html/laravel-app
+            cat << EOF > .env
+            APP_NAME=${{ secrets.APP_NAME }}
+            APP_ENV=${{ secrets.APP_ENV }}
+            APP_KEY=${{ secrets.APP_KEY }}
+            APP_DEBUG=${{ secrets.APP_DEBUG }}
+            APP_URL=${{ secrets.APP_URL }}
+            
+            DB_CONNECTION=${{ secrets.DB_CONNECTION }}
+            DB_HOST=${{ secrets.DB_HOST }}
+            DB_PORT=${{ secrets.DB_PORT }}
+            DB_DATABASE=${{ secrets.DB_DATABASE }}
+            DB_USERNAME=${{ secrets.DB_USERNAME }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            
+            # Add any other necessary environment variables here
+            EOF
+          "
