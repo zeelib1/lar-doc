@@ -32,7 +32,11 @@ jobs:
           ssh-keyscan ${{ secrets.HOST }} >> ~/.ssh/known_hosts
 
       - name: Copy .env file
-        run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+        run: |
+          if [ ! -f .env ]; then
+            echo "Error: .env file not found in the repository."
+            exit 1
+          fi
 
       - name: Install Composer dependencies
         run: composer install --no-dev --optimize-autoloader
