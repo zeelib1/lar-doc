@@ -51,10 +51,10 @@ jobs:
           echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env
           echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
 
-      - name: Check and free port 80
+      - name: Check and free ports 80 and 443
         run: |
           ssh ${{ secrets.USERNAME }}@${{ secrets.HOST }} "
-            sudo lsof -ti:80 | xargs --no-run-if-empty sudo kill -9
+            sudo lsof -ti:80,443 | xargs --no-run-if-empty sudo kill -9
           "
 
       - name: Deploy to VPS
@@ -79,8 +79,9 @@ jobs:
           ssh ${{ secrets.USERNAME }}@${{ secrets.HOST }} "
             cd /var/www/html/laravel-app
             docker-compose down --volumes --remove-orphans
+            docker stop $(docker ps -aq) || true
+            docker rm $(docker ps -aq) || true
             docker network prune -f
-            docker rm -f $(docker ps -aq) || true
             docker volume prune -f
           "
 
@@ -146,7 +147,6 @@ jobs:
         run: |
           ssh ${{ secrets.USERNAME }}@${{ secrets.HOST }} "
             cd /var/www/html/laravel-app
-            docker network create laravel-app_app-network || true
             docker-compose up -d --build --force-recreate
           "
 
